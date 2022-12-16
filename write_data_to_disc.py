@@ -2,7 +2,7 @@ import os
 from pyspark.sql import SparkSession, functions as F
 import findspark
 from pyspark.sql.types import *
-findspark.init("/opt/manual/spark")
+findspark.init("<directory_of_your_spark_home>")
 
 # Create spark session
 spark = (SparkSession.builder
@@ -12,7 +12,7 @@ spark = (SparkSession.builder
          .getOrCreate())
 
 # Get all room number as a list
-room_list = os.listdir("KETI")
+room_list = os.listdir("<directory_of_your_KETI_folder>")
 room_list.remove("README.txt")
 csv_list = ["co2.csv", "humidity.csv", "light.csv", "pir.csv", "temperature.csv"]
 # print(room_list)
@@ -36,7 +36,7 @@ for csv in csv_list:
     # Create the other empty dataframe. This will be created again for every measurement value in for loop.
     df_all_room = spark.createDataFrame([], schema)
     for room in room_list:
-        path = f"file:///home/train/PycharmProjects/221206_DataOps_Streaming_Data_Proc/KETI/{room}/{csv}"
+        path = f"file:///<directory_of_your_KETI_folder>/{room}/{csv}" # home/user/.../KETI
         df_per_room = spark.read.format("csv").load(path).withColumn("room", F.lit(room))
         # Use union to add rows/dataframes of each room.
         df_all_room = df_all_room.union(df_per_room)
@@ -52,5 +52,5 @@ df_final.coalesce(1).write \
         .format("csv") \
         .mode("overwrite") \
         .option("header", True) \
-        .save("file:///home/train/PycharmProjects/221206_DataOps_Streaming_Data_Proc/sensor_data")
+        .save("file:///<directory_of_the_folder_to_save>") # home/user/.../folder_name
 
